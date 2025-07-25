@@ -238,23 +238,27 @@ export default function Index() {
       .sort((a, b) => b.totalPoints - a.totalPoints);
   };
 
-  const calculateAvailableRiders = () => {
-    // Get all riders that have been picked across all races
-    const allPickedRiders = new Set<string>();
+  const calculatePlayerStats = (playerName: string) => {
+    // Get all riders that this specific player has picked across all races
+    const playerPickedRiders = new Set<string>();
     selectedRaces.forEach(race => {
-      Object.values(race.picks).forEach(pick => {
-        allPickedRiders.add(pick.name);
-      });
+      if (race.picks[playerName]) {
+        playerPickedRiders.add(race.picks[playerName].name);
+      }
     });
 
-    // Count available favorits (TOP8_LIST riders not yet picked)
-    const availableFavorits = TOP8_LIST.filter(rider => !allPickedRiders.has(rider)).length;
+    // Count favorits (TOP8_LIST riders) this player has picked
+    const playerFavorits = Array.from(playerPickedRiders).filter(rider => 
+      TOP8_LIST.includes(rider)
+    ).length;
 
-    // Count available wonderkids (5-star riders not yet picked)
-    const availableWonderkids = articleStars
-      .filter(star => star.stars === "5" && !allPickedRiders.has(star.rider)).length;
+    // Count wonderkids (5-star riders) this player has picked
+    const playerWonderkids = Array.from(playerPickedRiders).filter(rider => {
+      const riderStar = articleStars.find(star => star.rider === rider);
+      return riderStar && riderStar.stars === "5";
+    }).length;
 
-    return { availableFavorits, availableWonderkids };
+    return { favorits: playerFavorits, wonderkids: playerWonderkids };
   };
 
   return (
@@ -649,37 +653,44 @@ export default function Index() {
 
                     return (
                       <div className="space-y-4">
-                        <div className="grid grid-cols-4 gap-4 p-3 bg-muted/30 rounded-lg font-semibold text-sm">
-                          <span>Position</span>
-                          <span>Spiller</span>
-                          <span>Point</span>
-                          <span>Snit</span>
-                        </div>
+                         <div className="grid grid-cols-6 gap-4 p-3 bg-muted/30 rounded-lg font-semibold text-sm">
+                           <span>Position</span>
+                           <span>Spiller</span>
+                           <span>Point</span>
+                           <span>Snit</span>
+                           <span>Favoriter</span>
+                           <span>Wonderkids</span>
+                         </div>
                         <div className="space-y-2">
-                          {standings.map((standing, index) => (
-                            <div 
-                              key={standing.player} 
-                              className={`grid grid-cols-4 gap-4 p-4 rounded-lg transition-all duration-300 hover:shadow-card ${
-                                index === 0 ? 'bg-gradient-cycling text-primary-foreground' :
-                                index === 1 ? 'bg-gradient-secondary text-secondary-foreground' :
-                                index === 2 ? 'bg-gradient-accent text-accent-foreground' :
-                                'bg-muted/30'
-                              }`}
-                            >
-                              <div className="flex items-center gap-2">
-                                {index === 0 && <Trophy className="w-4 h-4" />}
-                                {index === 1 && <Medal className="w-4 h-4" />}
-                                {index === 2 && <Medal className="w-4 h-4" />}
-                                <span className="font-bold">{index + 1}</span>
-                              </div>
-                              <span className="font-semibold">{standing.player}</span>
-                              <div className="flex items-center gap-2">
-                                <span className="font-bold text-lg">{standing.totalPoints}</span>
-                                <span className="text-sm opacity-75">({standing.races} løb)</span>
-                              </div>
-                              <span className="font-medium">{standing.average}</span>
-                            </div>
-                          ))}
+                           {standings.map((standing, index) => {
+                              const playerStats = calculatePlayerStats(standing.player);
+                              return (
+                                <div 
+                                  key={standing.player} 
+                                  className={`grid grid-cols-6 gap-4 p-4 rounded-lg transition-all duration-300 hover:shadow-card ${
+                                    index === 0 ? 'bg-gradient-cycling text-primary-foreground' :
+                                    index === 1 ? 'bg-gradient-secondary text-secondary-foreground' :
+                                    index === 2 ? 'bg-gradient-accent text-accent-foreground' :
+                                    'bg-muted/30'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    {index === 0 && <Trophy className="w-4 h-4" />}
+                                    {index === 1 && <Medal className="w-4 h-4" />}
+                                    {index === 2 && <Medal className="w-4 h-4" />}
+                                    <span className="font-bold">{index + 1}</span>
+                                  </div>
+                                  <span className="font-semibold">{standing.player}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-bold text-lg">{standing.totalPoints}</span>
+                                    <span className="text-sm opacity-75">({standing.races} løb)</span>
+                                  </div>
+                                  <span className="font-medium">{standing.average}</span>
+                                  <span className="text-sm font-medium">{playerStats.favorits} Favoriter</span>
+                                  <span className="text-sm font-medium">{playerStats.wonderkids} Wonderkids</span>
+                                </div>
+                              );
+                            })}
                         </div>
                         
                         {standings.length > 0 && (
@@ -716,18 +727,6 @@ export default function Index() {
                                 <span className="text-muted-foreground">Bedste snit:</span>
                                 <span className="ml-2 font-semibold">
                                   {standings.length > 0 ? standings[0].average : "0.0"}
-                                </span>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Favorits tilbage:</span>
-                                <span className="ml-2 font-semibold">
-                                  {calculateAvailableRiders().availableFavorits}
-                                </span>
-                              </div>
-                              <div>
-                                <span className="text-muted-foreground">Wonderkids tilbage:</span>
-                                <span className="ml-2 font-semibold">
-                                  {calculateAvailableRiders().availableWonderkids}
                                 </span>
                               </div>
                             </div>
