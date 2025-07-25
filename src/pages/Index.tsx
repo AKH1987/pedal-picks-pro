@@ -290,16 +290,6 @@ export default function Index() {
                     className="transition-all duration-300 focus:shadow-cycling"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="pickStars">Stjerner fra Axelgaard (0-5)</Label>
-                  <Input 
-                    id="pickStars"
-                    placeholder="Stjerner fra Axelgaard (0-5)" 
-                    value={stars} 
-                    onChange={(e) => setStars(e.target.value)}
-                    className="transition-all duration-300 focus:shadow-cycling"
-                  />
-                </div>
                 {error && (
                   <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
                     <p className="text-destructive text-sm">{error}</p>
@@ -308,22 +298,18 @@ export default function Index() {
                 <Button 
                   className="w-full bg-gradient-cycling hover:opacity-90 transition-all duration-300"
                   onClick={() => {
-                    const fiveStarCount = riderPicks.filter(p => p.stars === "5").length;
                     const top8Count = riderPicks.filter(p => TOP8_LIST.includes(p.name)).length;
-                    if (fiveStarCount >= MAX_5_STAR_PICKS && stars === "5") {
-                      setError("Du har allerede brugt dine 5 tilladte 5-stjernede valg.");
-                      return;
-                    }
                     if (TOP8_LIST.includes(newPick) && top8Count >= MAX_TOP8_PICKS) {
                       setError("Du har allerede brugt dine 4 tilladte top-8 valg.");
                       return;
                     }
-                    setRiderPicks([...riderPicks, { name: newPick, stars, auto: false }]);
+                    // Use default star rating from articleStars or fallback to "3"
+                    const defaultStars = articleStars.find(star => star.rider === newPick)?.stars || "3";
+                    setRiderPicks([...riderPicks, { name: newPick, stars: defaultStars, auto: false }]);
                     setNewPick("");
-                    setStars("");
                     setError("");
                   }}
-                  disabled={!newPick || !stars}
+                  disabled={!newPick}
                 >
                   Tilføj valg
                 </Button>
