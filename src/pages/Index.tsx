@@ -238,6 +238,25 @@ export default function Index() {
       .sort((a, b) => b.totalPoints - a.totalPoints);
   };
 
+  const calculateAvailableRiders = () => {
+    // Get all riders that have been picked across all races
+    const allPickedRiders = new Set<string>();
+    selectedRaces.forEach(race => {
+      Object.values(race.picks).forEach(pick => {
+        allPickedRiders.add(pick.name);
+      });
+    });
+
+    // Count available favorits (TOP8_LIST riders not yet picked)
+    const availableFavorits = TOP8_LIST.filter(rider => !allPickedRiders.has(rider)).length;
+
+    // Count available wonderkids (5-star riders not yet picked)
+    const availableWonderkids = articleStars
+      .filter(star => star.stars === "5" && !allPickedRiders.has(star.rider)).length;
+
+    return { availableFavorits, availableWonderkids };
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -697,6 +716,18 @@ export default function Index() {
                                 <span className="text-muted-foreground">Bedste snit:</span>
                                 <span className="ml-2 font-semibold">
                                   {standings.length > 0 ? standings[0].average : "0.0"}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Favorits tilbage:</span>
+                                <span className="ml-2 font-semibold">
+                                  {calculateAvailableRiders().availableFavorits}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Wonderkids tilbage:</span>
+                                <span className="ml-2 font-semibold">
+                                  {calculateAvailableRiders().availableWonderkids}
                                 </span>
                               </div>
                             </div>
