@@ -8,7 +8,7 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 210 40% 98%;
     --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
@@ -17,24 +17,43 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 45 93% 47%;
+    --primary-foreground: 222.2 84% 4.9%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 142 69% 58%;
+    --secondary-foreground: 0 0% 100%;
 
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 45 93% 47%;
+
+    /* Cycling-inspired custom tokens */
+    --cycling-yellow: 45 93% 47%;
+    --cycling-green: 142 69% 58%;
+    --cycling-blue: 217 91% 60%;
+    --success: 142 69% 58%;
+    --warning: 38 92% 50%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(45 93% 47%), hsl(38 92% 50%));
+    --gradient-secondary: linear-gradient(135deg, hsl(142 69% 58%), hsl(158 64% 52%));
+    --gradient-accent: linear-gradient(135deg, hsl(217 91% 60%), hsl(224 76% 48%));
+    
+    /* Shadows */
+    --shadow-cycling: 0 4px 20px -2px hsl(45 93% 47% / 0.25);
+    --shadow-card: 0 2px 10px -2px hsl(222.2 84% 4.9% / 0.1);
+    
+    /* Transitions */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     --radius: 0.5rem;
 
