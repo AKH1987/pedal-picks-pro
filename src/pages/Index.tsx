@@ -36,6 +36,65 @@ interface Race {
   autoPicksDone: boolean;
 }
 
+const predefinedRaces = [
+  { name: "Tour Down Under", date: "2025-01-21T10:00" },
+  { name: "Etoile de Bessègues", date: "2025-02-05T10:00" },
+  { name: "UAE Tour", date: "2025-02-17T10:00" },
+  { name: "Vuelta A Andalucia Ruta Ciclista Del Sol", date: "2025-02-19T10:00" },
+  { name: "Omloop", date: "2025-03-01T10:00" },
+  { name: "Kuurne - Brussels - Kuurne", date: "2025-03-02T10:00" },
+  { name: "Strade Bianche", date: "2025-03-08T10:00" },
+  { name: "Paris-Nice", date: "2025-03-09T10:00" },
+  { name: "Tireno-Adriatico", date: "2025-03-10T10:00" },
+  { name: "Milano Sanremo", date: "2025-03-22T10:00" },
+  { name: "Katalonien Rundt", date: "2025-03-24T10:00" },
+  { name: "Classic Brugge-De Panne", date: "2025-03-26T10:00" },
+  { name: "E3 Lars Seier Classic", date: "2025-03-28T10:00" },
+  { name: "Gent-Wevelgem", date: "2025-03-30T10:00" },
+  { name: "Dwars door Vlaanderen", date: "2025-04-02T10:00" },
+  { name: "Ronde van Vlaanderen", date: "2025-04-06T10:00" },
+  { name: "Baskerlandet Rundt", date: "2025-04-07T10:00" },
+  { name: "Scheldeprijs", date: "2025-04-09T10:00" },
+  { name: "Paris Roubaix", date: "2025-04-13T10:00" },
+  { name: "Amstel Gold Race", date: "2025-04-20T10:00" },
+  { name: "Fleche Wallone", date: "2025-04-23T10:00" },
+  { name: "Liege-Bastogne-Liege", date: "2025-04-27T10:00" },
+  { name: "Romandiet Rundt", date: "2025-04-29T10:00" },
+  { name: "Eschborn-Frankfurt", date: "2025-05-01T10:00" },
+  { name: "Giro d'Italia", date: "2025-05-09T10:00" },
+  { name: "9. Etape", date: "2025-05-18T10:00" },
+  { name: "13. Etape", date: "2025-05-23T10:00" },
+  { name: "20. Etape", date: "2025-05-31T10:00" },
+  { name: "4 dage ved Dunkerque", date: "2025-05-14T10:00" },
+  { name: "Tour of Norway", date: "2025-05-29T10:00" },
+  { name: "Criterium Dauphiné", date: "2025-06-08T10:00" },
+  { name: "Tour de Suisse", date: "2025-06-15T10:00" },
+  { name: "Copenhagen Sprint", date: "2025-06-22T10:00" },
+  { name: "Tour de France", date: "2025-07-05T10:00" },
+  { name: "5. Etape", date: "2025-07-09T10:00" },
+  { name: "14. Etape", date: "2025-07-17T10:00" },
+  { name: "19. etape", date: "2025-07-25T10:00" },
+  { name: "Donostia San Sebastian Klasikoa", date: "2025-08-02T10:00" },
+  { name: "Tour de pologne", date: "2025-08-04T10:00" },
+  { name: "Vuelta a Burgos", date: "2025-08-05T10:00" },
+  { name: "Post DK", date: "2025-08-12T10:00" },
+  { name: "Renewi Tour", date: "2025-08-20T10:00" },
+  { name: "La Vuelta", date: "2025-08-23T10:00" },
+  { name: "7. Etape", date: "2025-08-29T10:00" },
+  { name: "14. Etape", date: "2025-09-05T10:00" },
+  { name: "17. Etape", date: "2025-09-10T10:00" },
+  { name: "Bretagne Classic", date: "2025-08-31T10:00" },
+  { name: "Grand Prix Cycliste de Qubec", date: "2025-09-12T10:00" },
+  { name: "Grand Prix Cycliste de Montreal", date: "2025-09-14T10:00" },
+  { name: "VM enkeltstart i Kigali", date: "2025-09-21T10:00" },
+  { name: "VM linjeløb i Kigali", date: "2025-09-28T10:00" },
+  { name: "Sparkassen Münsterland Giro", date: "2025-10-03T10:00" },
+  { name: "EM Guilherand-Granges", date: "2025-10-05T10:00" },
+  { name: "Gran Piemonte", date: "2025-10-09T10:00" },
+  { name: "Lombardiet Rundt", date: "2025-10-11T10:00" },
+  { name: "Paris Tours", date: "2025-10-12T10:00" }
+];
+
 export default function Index() {
   const [riderPicks, setRiderPicks] = useState<RiderPick[]>([]);
   const [newPick, setNewPick] = useState("");
@@ -65,6 +124,17 @@ export default function Index() {
       setRaceName("");
       setRaceDate("");
     }
+  };
+
+  const handleImportPredefinedRaces = () => {
+    const racesToImport = predefinedRaces.map(race => ({
+      name: race.name,
+      date: race.date,
+      results: [],
+      picks: {},
+      autoPicksDone: false
+    }));
+    setSelectedRaces([...selectedRaces, ...racesToImport]);
   };
 
   const getNextPicker = (race: Race): string | null => {
@@ -238,6 +308,27 @@ export default function Index() {
                   disabled={!raceName || !raceDate}
                 >
                   Tilføj løb
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-secondary" />
+                  Importer løbskalender
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-muted-foreground text-sm">
+                  Importer alle {predefinedRaces.length} foruddefinerede cykelløb for 2025 sæsonen.
+                </p>
+                <Button 
+                  onClick={handleImportPredefinedRaces} 
+                  variant="secondary"
+                  className="w-full bg-gradient-secondary hover:opacity-90 transition-all duration-300"
+                >
+                  Importer {predefinedRaces.length} løb
                 </Button>
               </CardContent>
             </Card>
