@@ -6,7 +6,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
-import { Trophy, Clock, Star, Users, Calendar, Target } from "lucide-react";
+import { Trophy, Clock, Star, Users, Calendar, Target, Medal } from "lucide-react";
 import cyclingHero from "@/assets/cycling-hero.jpg";
 
 const FIXED_PLAYERS = ["Anders", "Dennis", "Emil", "Christian", "Tobias", "Mathias", "Isak"];
@@ -126,6 +126,37 @@ export default function Index() {
     return basePoints + bonus;
   };
 
+  const calculateSeasonStandings = () => {
+    const standings: Record<string, { totalPoints: number; races: number }> = {};
+    
+    // Initialize all players
+    FIXED_PLAYERS.forEach(player => {
+      standings[player] = { totalPoints: 0, races: 0 };
+    });
+
+    // Calculate points for each race
+    selectedRaces.forEach(race => {
+      if (race.results.length > 0) { // Only count races with results
+        Object.entries(race.picks).forEach(([player, pick]) => {
+          if (standings[player]) {
+            standings[player].totalPoints += calculatePoints(pick.name, race);
+            standings[player].races += 1;
+          }
+        });
+      }
+    });
+
+    // Convert to array and sort by total points
+    return Object.entries(standings)
+      .map(([player, data]) => ({
+        player,
+        totalPoints: data.totalPoints,
+        races: data.races,
+        average: data.races > 0 ? (data.totalPoints / data.races).toFixed(1) : "0.0"
+      }))
+      .sort((a, b) => b.totalPoints - a.totalPoints);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -149,7 +180,7 @@ export default function Index() {
 
       <div className="container mx-auto p-6 space-y-6 -mt-8 relative z-20">
         <Tabs defaultValue="races" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-card shadow-card">
+          <TabsList className="grid w-full grid-cols-5 bg-card shadow-card">
             <TabsTrigger value="races" className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               Løb
@@ -165,6 +196,10 @@ export default function Index() {
             <TabsTrigger value="results" className="flex items-center gap-2">
               <Trophy className="w-4 h-4" />
               Resultater
+            </TabsTrigger>
+            <TabsTrigger value="standings" className="flex items-center gap-2">
+              <Medal className="w-4 h-4" />
+              Stillingen
             </TabsTrigger>
           </TabsList>
 
@@ -472,6 +507,118 @@ export default function Index() {
                   </CardContent>
                 </Card>
               ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="standings" className="space-y-6 animate-slide-up">
+            {selectedRaces.length === 0 ? (
+              <Card className="shadow-card">
+                <CardContent className="text-center py-8">
+                  <Medal className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">Ingen løb tilføjet endnu. Gå til "Løb" for at oprette dit første løb.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Medal className="w-5 h-5 text-primary" />
+                    Sæsonstillingen
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {(() => {
+                    const standings = calculateSeasonStandings();
+                    const hasFinishedRaces = selectedRaces.some(race => race.results.length > 0);
+                    
+                    if (!hasFinishedRaces) {
+                      return (
+                        <div className="text-center py-8">
+                          <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                          <p className="text-muted-foreground">Ingen afsluttede løb endnu. Tilføj resultater for at se stillingen.</p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-4 gap-4 p-3 bg-muted/30 rounded-lg font-semibold text-sm">
+                          <span>Position</span>
+                          <span>Spiller</span>
+                          <span>Point</span>
+                          <span>Snit</span>
+                        </div>
+                        <div className="space-y-2">
+                          {standings.map((standing, index) => (
+                            <div 
+                              key={standing.player} 
+                              className={`grid grid-cols-4 gap-4 p-4 rounded-lg transition-all duration-300 hover:shadow-card ${
+                                index === 0 ? 'bg-gradient-cycling text-primary-foreground' :
+                                index === 1 ? 'bg-gradient-secondary text-secondary-foreground' :
+                                index === 2 ? 'bg-gradient-accent text-accent-foreground' :
+                                'bg-muted/30'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                {index === 0 && <Trophy className="w-4 h-4" />}
+                                {index === 1 && <Medal className="w-4 h-4" />}
+                                {index === 2 && <Medal className="w-4 h-4" />}
+                                <span className="font-bold">{index + 1}</span>
+                              </div>
+                              <span className="font-semibold">{standing.player}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-lg">{standing.totalPoints}</span>
+                                <span className="text-sm opacity-75">({standing.races} løb)</span>
+                              </div>
+                              <span className="font-medium">{standing.average}</span>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {standings.length > 0 && (
+                          <div className="mt-6 p-4 bg-muted/20 rounded-lg">
+                            <h4 className="font-semibold mb-2 flex items-center gap-2">
+                              <Star className="w-4 h-4" />
+                              Statistik
+                            </h4>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">Totale løb:</span>
+                                <span className="ml-2 font-semibold">
+                                  {selectedRaces.filter(race => race.results.length > 0).length}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Aktive spillere:</span>
+                                <span className="ml-2 font-semibold">
+                                  {standings.filter(s => s.races > 0).length}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Højeste point (enkelt løb):</span>
+                                <span className="ml-2 font-semibold">
+                                  {Math.max(...selectedRaces
+                                    .filter(race => race.results.length > 0)
+                                    .flatMap(race => 
+                                      Object.entries(race.picks).map(([_, pick]) => calculatePoints(pick.name, race))
+                                    ), 0
+                                  )}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Bedste snit:</span>
+                                <span className="ml-2 font-semibold">
+                                  {standings.length > 0 ? standings[0].average : "0.0"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
         </Tabs>
