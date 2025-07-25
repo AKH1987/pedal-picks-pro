@@ -127,7 +127,18 @@ export default function Index() {
   };
 
   const handleImportPredefinedRaces = () => {
-    const racesToImport = predefinedRaces.map(race => ({
+    const currentTime = new Date();
+    const upcomingRaces = predefinedRaces.filter(race => {
+      try {
+        const raceStart = parseISO(race.date);
+        const deadline = new Date(raceStart.getTime() - 90 * 60 * 1000);
+        return deadline > currentTime;
+      } catch {
+        return false;
+      }
+    });
+    
+    const racesToImport = upcomingRaces.map(race => ({
       name: race.name,
       date: race.date,
       results: [],
@@ -321,14 +332,14 @@ export default function Index() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-muted-foreground text-sm">
-                  Importer alle {predefinedRaces.length} foruddefinerede cykelløb for 2025 sæsonen.
+                  Importer kommende cykelløb for 2025 sæsonen (kun løb der ikke har overskredet deadline).
                 </p>
                 <Button 
                   onClick={handleImportPredefinedRaces} 
                   variant="secondary"
                   className="w-full bg-gradient-secondary hover:opacity-90 transition-all duration-300"
                 >
-                  Importer {predefinedRaces.length} løb
+                  Importer kommende løb
                 </Button>
               </CardContent>
             </Card>
