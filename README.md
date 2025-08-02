@@ -71,3 +71,14 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Last GitHub Sync Test
+
+**Test performed on:** January 2, 2025 at 15:30 UTC  
+**Status:** Testing bidirectional sync between Lovable and GitHub  
+**Changes made:**
+- Added GitHub sync test badge to app header
+- Added timestamped comment in Index.tsx
+- Added this sync test section to README.md
+
+This test verifies that changes made in Lovable automatically sync to GitHub and vice versa.

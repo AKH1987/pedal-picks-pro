@@ -1,3 +1,4 @@
+// GitHub Sync Test - Added on 2025-01-02 at 15:30 UTC
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
-import { Trophy, Clock, Star, Users, Calendar, Target, Medal } from "lucide-react";
+import { Trophy, Clock, Star, Users, Calendar, Target, Medal, Github } from "lucide-react";
 import cyclingHero from "@/assets/cycling-hero.jpg";
 
 const FIXED_PLAYERS = ["Anders", "Dennis", "Emil", "Christian", "Tobias", "Mathias", "Isak"];
@@ -272,6 +273,12 @@ export default function Index() {
         />
         <div className="relative z-10 flex items-center justify-center h-full">
           <div className="text-center">
+            {/* GitHub Sync Test Badge */}
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-4 text-primary-foreground/90 text-sm">
+              <Github className="w-4 h-4" />
+              <span>GitHub Sync Test Active</span>
+            </div>
+            
             <h1 className="text-4xl font-bold text-primary-foreground mb-2 drop-shadow-lg">
               Cykelspil App
             </h1>
