@@ -308,6 +308,34 @@ export default function Index() {
           </TabsList>
 
           <TabsContent value="races" className="space-y-6 animate-slide-up">
+            {selectedRaces.length > 0 && (
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5 text-secondary" />
+                    Kommende løb ({selectedRaces.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {selectedRaces.map((race, i) => (
+                    <div key={i} className="border border-border p-4 rounded-lg bg-muted/30 transition-all duration-300 hover:shadow-card">
+                      <h3 className="font-semibold text-lg mb-2">{race.name}</h3>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4" />
+                          <span>Næste: <strong className="text-foreground">{getNextPicker(race) || "Alle har valgt"}</strong></span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          <span>Deadline: <strong className="text-foreground">{getCountdown(race.date)}</strong></span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="shadow-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -366,34 +394,6 @@ export default function Index() {
                 </Button>
               </CardContent>
             </Card>
-
-            {selectedRaces.length > 0 && (
-              <Card className="shadow-card">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="w-5 h-5 text-secondary" />
-                    Aktive løb ({selectedRaces.length})
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {selectedRaces.map((race, i) => (
-                    <div key={i} className="border border-border p-4 rounded-lg bg-muted/30 transition-all duration-300 hover:shadow-card">
-                      <h3 className="font-semibold text-lg mb-2">{race.name}</h3>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4" />
-                          <span>Næste: <strong className="text-foreground">{getNextPicker(race) || "Alle har valgt"}</strong></span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4" />
-                          <span>Deadline: <strong className="text-foreground">{getCountdown(race.date)}</strong></span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
           </TabsContent>
 
           <TabsContent value="picks" className="space-y-6 animate-slide-up">
