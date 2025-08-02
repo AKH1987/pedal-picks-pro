@@ -1,0 +1,85 @@
+# Axelgaard Star Ratings Scraper (with race filtering)
+# This script checks TV2's cycling news feed, finds Axelgaard previews,
+# and extracts rider star ratings only for selected races.
+
+import requests
+from bs4 import BeautifulSoup
+import re
+from datetime import datetime
+
+BASE_URL = "https://sport.tv2.dk/cykling"
+HEADERS = {"User-Agent": "Mozilla/5.0"}
+
+# Define the race names you want to allow
+selected_race_names = [
+    "Tour Down Under", "Etoile de Bességes", "UAE Tour",
+    "Vuelta A Andalucia Ruta Ciclista Del Sol", "Omloop", "Kuurne - Brussels - Kuurne",
+    "Strade Bianche", "Paris-Nice", "Tireno-Adriatico", "Milano Sanremo",
+    "Katalonien Rundt", "Classic Brugge-De Panne", "E3 Lars Seier Classic", "Gent-Wevelgem",
+    "Dwars door Vlaanderen", "Ronde van Vlaanderen", "Baskerlandet Rundt", "Scheldeprijs",
+    "Paris Roubaix", "Amstel Gold Race", "Fleche Wallone", "Liege-Bastogne-Liege",
+    "Romandiet Rundt", "Eschborn-Frankfurt", "Giro d'Italia", "4 dage ved Dunkerque",
+    "Tour of Norway", "Criterium Dauphiné", "Tour de Suisse", "Copenhagen Sprint",
+    "Tour de France", "Donostia San Sebastian Klasikoa", "Tour de pologne", "Vuelta a Burgos",
+    "Post DK", "Renewi Tour", "La Vuelta", "Bretagne Classic",
+    "Grand Prix Cycliste de Qubec", "Grand Prix Cycliste de Montreal",
+    "VM enkeltstart i Kigali", "VM linjeløb i Kigali", "Sparkassen Münsterland Giro",
+    "EM Guilherand-Granges", "Gran Piemonte", "Lombardiet Rundt", "Paris Tours",
+    "9. Etape", "13. Etape", "20. Etape", "5. Etape", "14. Etape", "19. etape", "7. Etape", "17. Etape"
+]
+
+# Convert for matching
+filtered_keywords = [r.lower().replace(" ", "-") for r in selected_race_names]
+
+def get_article_links():
+    """Scrapes TV2 Sport Cycling page and returns links to Axelgaard previews for selected races."""
+    response = requests.get(BASE_URL, headers=HEADERS)
+    soup = BeautifulSoup(response.text, "html.parser")
+
+    links = []
+    for a in soup.find_all("a", href=True):
+        href = a["href"]
+        if "/cykling/" in href and "axelgaard" in href and "optakt" in href:
+            href_lc = href.lower()
+            if any(keyword in href_lc for keyword in filtered_keywords):
+                full_link = href if href.startswith("http") else f"https://sport.tv2.dk{href}"
+                links.append(full_link)
+
+    return list(set(links))  # remove duplicates
+
+def extract_star_ratings(article_url):
+    """Fetches article and parses rider names and stars."""
+    response = requests.get(article_url, headers=HEADERS)
+    soup = BeautifulSoup(response.text, "html.parser")
+    content = soup.get_text()
+
+    pattern = r"(\*{1,5})\s+([A-Za-zÆØÅæøåÉéÈèçÇ\-'.\s]+)"
+    matches = re.findall(pattern, content)
+
+    parsed_riders = []
+    for stars, name in matches:
+        parsed_riders.append({
+            "rider": name.strip(),
+            "stars": len(stars)
+        })
+
+    return parsed_riders
+
+def get_latest_ratings():
+    links = get_article_links()
+    if not links:
+        return None
+
+    latest_article = sorted(links)[-1]  # newest
+    print(f"Parsing: {latest_article}")
+    ratings = extract_star_ratings(latest_article)
+    return ratings
+
+if __name__ == "__main__":
+    stars = get_latest_ratings()
+    if stars:
+        print("\n⭐ Axelgaard Ratings Detected:\n")
+        for entry in stars:
+            print(f"{entry['stars']}★ - {entry['rider']}")
+    else:
+        print("No Axelgaard article found for selected races.")
