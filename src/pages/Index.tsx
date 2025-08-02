@@ -14,15 +14,6 @@ const TOP8_LIST = [
   "Mathieu Van der Poel", "Marc Hirschi", "Jonas Vingegaard", "Primoz Roglic"
 ];
 
-const PREDEFINED_RACES = [
-  { name: "Tour de France - Etape 1", date: "2024-08-15T14:00" },
-  { name: "Tour de France - Etape 5", date: "2024-08-20T14:30" },
-  { name: "Vuelta a España - Etape 1", date: "2024-08-25T15:00" },
-  { name: "World Championships - Road Race", date: "2024-09-01T13:00" },
-  { name: "Paris-Roubaix", date: "2024-09-15T14:00" },
-  { name: "Tour of Lombardy", date: "2024-10-05T13:30" },
-];
-
 export default function App() {
   const [riderPicks, setRiderPicks] = useState([]);
   const [newPick, setNewPick] = useState("");
@@ -52,32 +43,6 @@ export default function App() {
       setRaceName("");
       setRaceDate("");
     }
-  };
-
-  const importUpcomingRaces = () => {
-    const now = new Date();
-    const upcomingRaces = PREDEFINED_RACES.filter(race => {
-      const raceStart = new Date(race.date);
-      const deadline = new Date(raceStart.getTime() - 90 * 60 * 1000);
-      return deadline > now;
-    }).map(race => ({
-      name: race.name,
-      date: race.date,
-      results: [],
-      picks: {},
-      autoPicksDone: false
-    }));
-    
-    setSelectedRaces(upcomingRaces);
-  };
-
-  const getUpcomingRacesCount = () => {
-    const now = new Date();
-    return PREDEFINED_RACES.filter(race => {
-      const raceStart = new Date(race.date);
-      const deadline = new Date(raceStart.getTime() - 90 * 60 * 1000);
-      return deadline > now;
-    }).length;
   };
 
   const getNextPicker = (race) => {
@@ -154,9 +119,6 @@ export default function App() {
             <Label>Startdato og tidspunkt</Label>
             <Input type="datetime-local" value={raceDate} onChange={(e) => setRaceDate(e.target.value)} />
             <Button onClick={handleAddRace}>Tilføj løb</Button>
-            <Button onClick={importUpcomingRaces} variant="outline">
-              Importer løb fra liste ({getUpcomingRacesCount()} kommende)
-            </Button>
             <div className="pt-4 space-y-2">
               {selectedRaces.map((race, i) => (
                 <div key={i} className="border p-3 rounded">
