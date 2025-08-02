@@ -311,6 +311,27 @@ export default function Index() {
             <Card className="shadow-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-secondary" />
+                  Importer løbskalender
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-muted-foreground text-sm">
+                  Importer kommende cykelløb for 2025 sæsonen (kun løb der ikke har overskredet deadline).
+                </p>
+                <Button 
+                  onClick={handleImportPredefinedRaces} 
+                  variant="secondary"
+                  className="w-full bg-gradient-secondary hover:opacity-90 transition-all duration-300"
+                >
+                  Importer kommende løb
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-primary" />
                   Opret nyt løb
                 </CardTitle>
@@ -342,27 +363,6 @@ export default function Index() {
                   disabled={!raceName || !raceDate}
                 >
                   Tilføj løb
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-secondary" />
-                  Importer løbskalender
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-muted-foreground text-sm">
-                  Importer kommende cykelløb for 2025 sæsonen (kun løb der ikke har overskredet deadline).
-                </p>
-                <Button 
-                  onClick={handleImportPredefinedRaces} 
-                  variant="secondary"
-                  className="w-full bg-gradient-secondary hover:opacity-90 transition-all duration-300"
-                >
-                  Importer kommende løb
                 </Button>
               </CardContent>
             </Card>
