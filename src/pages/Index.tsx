@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
 import { Trophy, Clock, Star, Users, Calendar, Target, Medal, Github } from "lucide-react";
+import { Link } from "react-router-dom";
 import cyclingHero from "@/assets/cycling-hero.jpg";
 
 const FIXED_PLAYERS = ["Anders", "Dennis", "Emil", "Christian", "Tobias", "Mathias", "Isak"];
@@ -99,9 +100,7 @@ const predefinedRaces = [
 export default function Index() {
   const [riderPicks, setRiderPicks] = useState<RiderPick[]>([]);
   const [newPick, setNewPick] = useState("");
-  const [stars, setStars] = useState("");
   const [articleStars, setArticleStars] = useState<ArticleStar[]>([]);
-  const [rider, setRider] = useState("");
   const [raceName, setRaceName] = useState("");
   const [raceDate, setRaceDate] = useState("");
   const [selectedRaces, setSelectedRaces] = useState<Race[]>([]);
@@ -291,28 +290,33 @@ export default function Index() {
 
       <div className="container mx-auto p-6 space-y-6 -mt-8 relative z-20">
         <Tabs defaultValue="races" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 bg-card shadow-card">
-            <TabsTrigger value="races" className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              Løb
-            </TabsTrigger>
-            <TabsTrigger value="picks" className="flex items-center gap-2">
-              <Target className="w-4 h-4" />
-              Picks
-            </TabsTrigger>
-            <TabsTrigger value="stars" className="flex items-center gap-2">
-              <Star className="w-4 h-4" />
-              Axelgaard
-            </TabsTrigger>
-            <TabsTrigger value="results" className="flex items-center gap-2">
-              <Trophy className="w-4 h-4" />
-              Resultater
-            </TabsTrigger>
-            <TabsTrigger value="standings" className="flex items-center gap-2">
-              <Medal className="w-4 h-4" />
-              Stillingen
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex items-center gap-4 mb-6">
+            <TabsList className="grid grid-cols-4 bg-card shadow-card flex-1">
+              <TabsTrigger value="races" className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                Løb
+              </TabsTrigger>
+              <TabsTrigger value="picks" className="flex items-center gap-2">
+                <Target className="w-4 h-4" />
+                Picks
+              </TabsTrigger>
+              <TabsTrigger value="results" className="flex items-center gap-2">
+                <Trophy className="w-4 h-4" />
+                Resultater
+              </TabsTrigger>
+              <TabsTrigger value="standings" className="flex items-center gap-2">
+                <Medal className="w-4 h-4" />
+                Stillingen
+              </TabsTrigger>
+            </TabsList>
+            
+            <Button variant="outline" asChild className="flex items-center gap-2">
+              <Link to="/axelgaard">
+                <Github className="w-4 h-4" />
+                Axelgaard
+              </Link>
+            </Button>
+          </div>
 
           <TabsContent value="races" className="space-y-6 animate-slide-up">
             {selectedRaces.length > 0 && (
@@ -473,72 +477,6 @@ export default function Index() {
             )}
           </TabsContent>
 
-          <TabsContent value="stars" className="space-y-6 animate-slide-up">
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Star className="w-5 h-5 text-primary" />
-                  Tilføj Axelgaard vurdering
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="rider">Rytternavn</Label>
-                  <Input 
-                    id="rider"
-                    placeholder="Rytternavn" 
-                    value={rider} 
-                    onChange={(e) => setRider(e.target.value)}
-                    className="transition-all duration-300 focus:shadow-cycling"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="starRating">Antal stjerner (0-5)</Label>
-                  <Input 
-                    id="starRating"
-                    placeholder="Antal stjerner (0-5)" 
-                    value={stars} 
-                    onChange={(e) => setStars(e.target.value)}
-                    className="transition-all duration-300 focus:shadow-cycling"
-                  />
-                </div>
-                <Button 
-                  onClick={() => {
-                    if (rider && stars) {
-                      setArticleStars([...articleStars, { rider, stars }]);
-                      setRider("");
-                      setStars("");
-                    }
-                  }}
-                  className="w-full bg-gradient-cycling hover:opacity-90 transition-all duration-300"
-                  disabled={!rider || !stars}
-                >
-                  Tilføj vurdering
-                </Button>
-              </CardContent>
-            </Card>
-
-            {articleStars.length > 0 && (
-              <Card className="shadow-card">
-                <CardHeader>
-                  <CardTitle>Axelgaard vurderinger ({articleStars.length})</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {articleStars.map((item, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                        <span className="font-medium">{item.rider}</span>
-                        <Badge variant="secondary" className="flex items-center gap-1">
-                          <Star className="w-3 h-3" />
-                          {item.stars} stjerner
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
 
           <TabsContent value="results" className="space-y-6 animate-slide-up">
             {selectedRaces.length === 0 ? (
