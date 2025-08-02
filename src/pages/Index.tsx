@@ -290,33 +290,37 @@ export default function Index() {
 
       <div className="container mx-auto p-6 space-y-6 -mt-8 relative z-20">
         <Tabs defaultValue="races" className="w-full">
-          <div className="flex items-center gap-2 mb-6">
-            <TabsTrigger value="races" className="flex items-center gap-2 bg-card shadow-card px-4 py-2 rounded-md border">
-              <Calendar className="w-4 h-4" />
-              Løb
-            </TabsTrigger>
-            
-            <Button variant="outline" asChild className="flex items-center gap-2">
-              <Link to="/axelgaard">
-                <Github className="w-4 h-4" />
-                Axelgaard
-              </Link>
-            </Button>
-            
-            <TabsTrigger value="picks" className="flex items-center gap-2 bg-card shadow-card px-4 py-2 rounded-md border">
-              <Target className="w-4 h-4" />
-              Picks
-            </TabsTrigger>
-            
-            <TabsTrigger value="results" className="flex items-center gap-2 bg-card shadow-card px-4 py-2 rounded-md border">
-              <Trophy className="w-4 h-4" />
-              Resultater
-            </TabsTrigger>
-            
-            <TabsTrigger value="standings" className="flex items-center gap-2 bg-card shadow-card px-4 py-2 rounded-md border">
-              <Medal className="w-4 h-4" />
-              Stillingen
-            </TabsTrigger>
+          <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-2">
+              <TabsList className="grid grid-cols-1 bg-card shadow-card">
+                <TabsTrigger value="races" className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  Løb
+                </TabsTrigger>
+              </TabsList>
+              
+              <Button variant="outline" asChild className="flex items-center gap-2">
+                <Link to="/axelgaard">
+                  <Github className="w-4 h-4" />
+                  Axelgaard
+                </Link>
+              </Button>
+              
+              <TabsList className="grid grid-cols-3 bg-card shadow-card">
+                <TabsTrigger value="picks" className="flex items-center gap-2">
+                  <Target className="w-4 h-4" />
+                  Picks
+                </TabsTrigger>
+                <TabsTrigger value="results" className="flex items-center gap-2">
+                  <Trophy className="w-4 h-4" />
+                  Resultater
+                </TabsTrigger>
+                <TabsTrigger value="standings" className="flex items-center gap-2">
+                  <Medal className="w-4 h-4" />
+                  Stillingen
+                </TabsTrigger>
+              </TabsList>
+            </div>
           </div>
 
           <TabsContent value="races" className="space-y-6 animate-slide-up">
