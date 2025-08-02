@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { formatDistanceToNowStrict, parseISO } from "date-fns";
+import { Trophy, Clock, Star, Users, Calendar, Target, Medal } from "lucide-react";
+import cyclingHero from "@/assets/cycling-hero.jpg";
 
 const FIXED_PLAYERS = ["Anders", "Dennis", "Emil", "Christian", "Tobias", "Mathias", "Isak"];
 const MAX_5_STAR_PICKS = 5;
@@ -14,15 +17,93 @@ const TOP8_LIST = [
   "Mathieu Van der Poel", "Marc Hirschi", "Jonas Vingegaard", "Primoz Roglic"
 ];
 
-export default function App() {
-  const [riderPicks, setRiderPicks] = useState([]);
+interface RiderPick {
+  name: string;
+  stars: string;
+  auto: boolean;
+}
+
+interface ArticleStar {
+  rider: string;
+  stars: string;
+}
+
+interface Race {
+  name: string;
+  date: string;
+  results: string[];
+  picks: Record<string, RiderPick>;
+  autoPicksDone: boolean;
+}
+
+const predefinedRaces = [
+  { name: "Tour Down Under", date: "2025-01-21T10:00" },
+  { name: "Etoile de Bessègues", date: "2025-02-05T10:00" },
+  { name: "UAE Tour", date: "2025-02-17T10:00" },
+  { name: "Vuelta A Andalucia Ruta Ciclista Del Sol", date: "2025-02-19T10:00" },
+  { name: "Omloop", date: "2025-03-01T10:00" },
+  { name: "Kuurne - Brussels - Kuurne", date: "2025-03-02T10:00" },
+  { name: "Strade Bianche", date: "2025-03-08T10:00" },
+  { name: "Paris-Nice", date: "2025-03-09T10:00" },
+  { name: "Tireno-Adriatico", date: "2025-03-10T10:00" },
+  { name: "Milano Sanremo", date: "2025-03-22T10:00" },
+  { name: "Katalonien Rundt", date: "2025-03-24T10:00" },
+  { name: "Classic Brugge-De Panne", date: "2025-03-26T10:00" },
+  { name: "E3 Lars Seier Classic", date: "2025-03-28T10:00" },
+  { name: "Gent-Wevelgem", date: "2025-03-30T10:00" },
+  { name: "Dwars door Vlaanderen", date: "2025-04-02T10:00" },
+  { name: "Ronde van Vlaanderen", date: "2025-04-06T10:00" },
+  { name: "Baskerlandet Rundt", date: "2025-04-07T10:00" },
+  { name: "Scheldeprijs", date: "2025-04-09T10:00" },
+  { name: "Paris Roubaix", date: "2025-04-13T10:00" },
+  { name: "Amstel Gold Race", date: "2025-04-20T10:00" },
+  { name: "Fleche Wallone", date: "2025-04-23T10:00" },
+  { name: "Liege-Bastogne-Liege", date: "2025-04-27T10:00" },
+  { name: "Romandiet Rundt", date: "2025-04-29T10:00" },
+  { name: "Eschborn-Frankfurt", date: "2025-05-01T10:00" },
+  { name: "Giro d'Italia", date: "2025-05-09T10:00" },
+  { name: "9. Etape", date: "2025-05-18T10:00" },
+  { name: "13. Etape", date: "2025-05-23T10:00" },
+  { name: "20. Etape", date: "2025-05-31T10:00" },
+  { name: "4 dage ved Dunkerque", date: "2025-05-14T10:00" },
+  { name: "Tour of Norway", date: "2025-05-29T10:00" },
+  { name: "Criterium Dauphiné", date: "2025-06-08T10:00" },
+  { name: "Tour de Suisse", date: "2025-06-15T10:00" },
+  { name: "Copenhagen Sprint", date: "2025-06-22T10:00" },
+  { name: "Tour de France", date: "2025-07-05T10:00" },
+  { name: "5. Etape", date: "2025-07-09T10:00" },
+  { name: "14. Etape", date: "2025-07-17T10:00" },
+  { name: "19. etape", date: "2025-07-25T10:00" },
+  { name: "Donostia San Sebastian Klasikoa", date: "2025-08-02T10:00" },
+  { name: "Tour de pologne", date: "2025-08-04T10:00" },
+  { name: "Vuelta a Burgos", date: "2025-08-05T10:00" },
+  { name: "Post DK", date: "2025-08-12T10:00" },
+  { name: "Renewi Tour", date: "2025-08-20T10:00" },
+  { name: "La Vuelta", date: "2025-08-23T10:00" },
+  { name: "7. Etape", date: "2025-08-29T10:00" },
+  { name: "14. Etape", date: "2025-09-05T10:00" },
+  { name: "17. Etape", date: "2025-09-10T10:00" },
+  { name: "Bretagne Classic", date: "2025-08-31T10:00" },
+  { name: "Grand Prix Cycliste de Qubec", date: "2025-09-12T10:00" },
+  { name: "Grand Prix Cycliste de Montreal", date: "2025-09-14T10:00" },
+  { name: "VM enkeltstart i Kigali", date: "2025-09-21T10:00" },
+  { name: "VM linjeløb i Kigali", date: "2025-09-28T10:00" },
+  { name: "Sparkassen Münsterland Giro", date: "2025-10-03T10:00" },
+  { name: "EM Guilherand-Granges", date: "2025-10-05T10:00" },
+  { name: "Gran Piemonte", date: "2025-10-09T10:00" },
+  { name: "Lombardiet Rundt", date: "2025-10-11T10:00" },
+  { name: "Paris Tours", date: "2025-10-12T10:00" }
+];
+
+export default function Index() {
+  const [riderPicks, setRiderPicks] = useState<RiderPick[]>([]);
   const [newPick, setNewPick] = useState("");
   const [stars, setStars] = useState("");
-  const [articleStars, setArticleStars] = useState([]);
+  const [articleStars, setArticleStars] = useState<ArticleStar[]>([]);
   const [rider, setRider] = useState("");
   const [raceName, setRaceName] = useState("");
   const [raceDate, setRaceDate] = useState("");
-  const [selectedRaces, setSelectedRaces] = useState([]);
+  const [selectedRaces, setSelectedRaces] = useState<Race[]>([]);
   const [error, setError] = useState("");
   const [now, setNow] = useState(new Date());
 
@@ -45,21 +126,46 @@ export default function App() {
     }
   };
 
-  const getNextPicker = (race) => {
+  const handleImportPredefinedRaces = () => {
+    const currentTime = new Date();
+    const upcomingRaces = predefinedRaces.filter(race => {
+      try {
+        const raceStart = parseISO(race.date);
+        const deadline = new Date(raceStart.getTime() - 90 * 60 * 1000);
+        return deadline > currentTime;
+      } catch {
+        return false;
+      }
+    });
+    
+    const racesToImport = upcomingRaces.map(race => ({
+      name: race.name,
+      date: race.date,
+      results: [],
+      picks: {},
+      autoPicksDone: false
+    }));
+    setSelectedRaces([...selectedRaces, ...racesToImport]);
+  };
+
+  const getNextPicker = (race: Race): string | null => {
     for (let p of FIXED_PLAYERS) {
       if (!race.picks[p]) return p;
     }
     return null;
   };
 
-  const getCountdown = (raceDate) => {
-    const raceStart = parseISO(raceDate);
-    const deadline = new Date(raceStart.getTime() - 90 * 60 * 1000);
-    const timeLeft = formatDistanceToNowStrict(deadline, { addSuffix: true });
-    return timeLeft;
+  const getCountdown = (raceDate: string): string => {
+    try {
+      const raceStart = parseISO(raceDate);
+      const deadline = new Date(raceStart.getTime() - 90 * 60 * 1000);
+      return formatDistanceToNowStrict(deadline, { addSuffix: true });
+    } catch {
+      return "Invalid date";
+    }
   };
 
-  const fetchSimulatedPCSResults = (raceIndex) => {
+  const fetchSimulatedPCSResults = (raceIndex: number): void => {
     const sampleFinishers = [
       "Jonas Vingegaard", "Remco Evenepoel", "Tadej Pogacar",
       "Mads Pedersen (DK)", "Primoz Roglic"
@@ -69,13 +175,13 @@ export default function App() {
     setSelectedRaces(updatedRaces);
   };
 
-  const triggerAutoPicks = (raceIndex) => {
+  const triggerAutoPicks = (raceIndex: number): void => {
     const updatedRaces = [...selectedRaces];
     const race = updatedRaces[raceIndex];
     FIXED_PLAYERS.forEach(player => {
       if (!race.picks[player]) {
         const available = articleStars
-          .filter(r => !Object.values(race.picks).some((p: any) => p.name === r.rider))
+          .filter(r => !Object.values(race.picks).some(p => p.name === r.rider))
           .sort((a, b) => parseInt(a.stars) - parseInt(b.stars));
         if (available.length > 0) {
           race.picks[player] = { name: available[0].rider, stars: available[0].stars, auto: true };
@@ -86,7 +192,7 @@ export default function App() {
     setSelectedRaces(updatedRaces);
   };
 
-  const calculatePoints = (riderName, race) => {
+  const calculatePoints = (riderName: string, race: Race): number => {
     const position = race.results.indexOf(riderName);
     if (position === -1) return 0;
     let basePoints = [6, 4, 3, 2, 1][position] || 0;
@@ -101,114 +207,540 @@ export default function App() {
     return basePoints + bonus;
   };
 
+  const calculateSeasonStandings = () => {
+    const standings: Record<string, { totalPoints: number; races: number }> = {};
+    
+    // Initialize all players
+    FIXED_PLAYERS.forEach(player => {
+      standings[player] = { totalPoints: 0, races: 0 };
+    });
+
+    // Calculate points for each race
+    selectedRaces.forEach(race => {
+      if (race.results.length > 0) { // Only count races with results
+        Object.entries(race.picks).forEach(([player, pick]) => {
+          if (standings[player]) {
+            standings[player].totalPoints += calculatePoints(pick.name, race);
+            standings[player].races += 1;
+          }
+        });
+      }
+    });
+
+    // Convert to array and sort by total points
+    return Object.entries(standings)
+      .map(([player, data]) => ({
+        player,
+        totalPoints: data.totalPoints,
+        races: data.races,
+        average: data.races > 0 ? (data.totalPoints / data.races).toFixed(1) : "0.0"
+      }))
+      .sort((a, b) => b.totalPoints - a.totalPoints);
+  };
+
+  const calculatePlayerStats = (playerName: string) => {
+    // Get all riders that this specific player has picked across all races
+    const playerPickedRiders = new Set<string>();
+    selectedRaces.forEach(race => {
+      if (race.picks[playerName]) {
+        playerPickedRiders.add(race.picks[playerName].name);
+      }
+    });
+
+    // Count favorits (TOP8_LIST riders) this player has picked
+    const playerFavorits = Array.from(playerPickedRiders).filter(rider => 
+      TOP8_LIST.includes(rider)
+    ).length;
+
+    // Count wonderkids (5-star riders) this player has picked
+    const playerWonderkids = Array.from(playerPickedRiders).filter(rider => {
+      const riderStar = articleStars.find(star => star.rider === rider);
+      return riderStar && riderStar.stars === "5";
+    }).length;
+
+    return { favorits: playerFavorits, wonderkids: playerWonderkids };
+  };
+
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Cykelspil App</h1>
-      <Tabs defaultValue="races">
-        <TabsList>
-          <TabsTrigger value="races">Løb</TabsTrigger>
-          <TabsTrigger value="picks">Picks</TabsTrigger>
-          <TabsTrigger value="stars">Axelgaard</TabsTrigger>
-          <TabsTrigger value="results">Resultater</TabsTrigger>
-        </TabsList>
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <div className="relative h-64 bg-gradient-cycling overflow-hidden">
+        <img 
+          src={cyclingHero} 
+          alt="Professional cycling race" 
+          className="absolute inset-0 w-full h-full object-cover opacity-20"
+        />
+        <div className="relative z-10 flex items-center justify-center h-full">
+          <div className="text-center">
+            <h1 className="text-4xl font-bold text-primary-foreground mb-2 drop-shadow-lg">
+              Cykelspil App
+            </h1>
+            <p className="text-lg text-primary-foreground/90 drop-shadow-md">
+              Professionel cykelkonkurrence management
+            </p>
+          </div>
+        </div>
+      </div>
 
-        <TabsContent value="races">
-          <Card><CardContent className="p-4 space-y-4">
-            <Label>Løbsnavn</Label>
-            <Input value={raceName} onChange={(e) => setRaceName(e.target.value)} placeholder="F.eks. Tour de France - Etape 5" />
-            <Label>Startdato og tidspunkt</Label>
-            <Input type="datetime-local" value={raceDate} onChange={(e) => setRaceDate(e.target.value)} />
-            <Button onClick={handleAddRace}>Tilføj løb</Button>
-            <div className="pt-4 space-y-2">
-              {selectedRaces.map((race, i) => (
-                <div key={i} className="border p-3 rounded">
-                  <h2 className="font-semibold">{race.name}</h2>
-                  <p>Næste til at vælge: <strong>{getNextPicker(race) || "Alle har valgt"}</strong></p>
-                  <p>Deadline for førstevælger: <strong>{getCountdown(race.date)}</strong></p>
+      <div className="container mx-auto p-6 space-y-6 -mt-8 relative z-20">
+        <Tabs defaultValue="races" className="w-full">
+          <TabsList className="grid w-full grid-cols-5 bg-card shadow-card">
+            <TabsTrigger value="races" className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Løb
+            </TabsTrigger>
+            <TabsTrigger value="picks" className="flex items-center gap-2">
+              <Target className="w-4 h-4" />
+              Picks
+            </TabsTrigger>
+            <TabsTrigger value="stars" className="flex items-center gap-2">
+              <Star className="w-4 h-4" />
+              Axelgaard
+            </TabsTrigger>
+            <TabsTrigger value="results" className="flex items-center gap-2">
+              <Trophy className="w-4 h-4" />
+              Resultater
+            </TabsTrigger>
+            <TabsTrigger value="standings" className="flex items-center gap-2">
+              <Medal className="w-4 h-4" />
+              Stillingen
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="races" className="space-y-6 animate-slide-up">
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-primary" />
+                  Opret nyt løb
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="raceName">Løbsnavn</Label>
+                  <Input 
+                    id="raceName"
+                    value={raceName} 
+                    onChange={(e) => setRaceName(e.target.value)} 
+                    placeholder="F.eks. Tour de France - Etape 5"
+                    className="transition-all duration-300 focus:shadow-cycling"
+                  />
                 </div>
-              ))}
-            </div>
-          </CardContent></Card>
-        </TabsContent>
+                <div className="space-y-2">
+                  <Label htmlFor="raceDate">Startdato og tidspunkt</Label>
+                  <Input 
+                    id="raceDate"
+                    type="datetime-local" 
+                    value={raceDate} 
+                    onChange={(e) => setRaceDate(e.target.value)}
+                    className="transition-all duration-300 focus:shadow-cycling"
+                  />
+                </div>
+                <Button 
+                  onClick={handleAddRace} 
+                  className="w-full bg-gradient-cycling hover:opacity-90 transition-all duration-300"
+                  disabled={!raceName || !raceDate}
+                >
+                  Tilføj løb
+                </Button>
+              </CardContent>
+            </Card>
 
-        <TabsContent value="picks">
-          <Card><CardContent className="p-4 space-y-4">
-            <Label>Tilføj nyt valg</Label>
-            <Input placeholder="Rytternavn" value={newPick} onChange={(e) => setNewPick(e.target.value)} />
-            <Input placeholder="Stjerner fra Axelgaard (0-5)" value={stars} onChange={(e) => setStars(e.target.value)} />
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-            <Button onClick={() => {
-              const fiveStarCount = riderPicks.filter((p: any) => p.stars === "5").length;
-              const top8Count = riderPicks.filter((p: any) => TOP8_LIST.includes(p.name)).length;
-              if (fiveStarCount >= MAX_5_STAR_PICKS && stars === "5") {
-                setError("Du har allerede brugt dine 5 tilladte 5-stjernede valg.");
-                return;
-              }
-              if (TOP8_LIST.includes(newPick) && top8Count >= MAX_TOP8_PICKS) {
-                setError("Du har allerede brugt dine 4 tilladte top-8 valg.");
-                return;
-              }
-              setRiderPicks([...riderPicks, { name: newPick, stars, auto: false }]);
-              setNewPick("");
-              setStars("");
-              setError("");
-            }}>Tilføj</Button>
-            <ul className="list-disc list-inside pt-4">
-              {riderPicks.map((pick: any, i) => (
-                <li key={i}>{pick.name} ({pick.stars} stjerner){pick.auto ? " (auto)" : ""}</li>
-              ))}
-            </ul>
-          </CardContent></Card>
-        </TabsContent>
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-secondary" />
+                  Importer løbskalender
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-muted-foreground text-sm">
+                  Importer kommende cykelløb for 2025 sæsonen (kun løb der ikke har overskredet deadline).
+                </p>
+                <Button 
+                  onClick={handleImportPredefinedRaces} 
+                  variant="secondary"
+                  className="w-full bg-gradient-secondary hover:opacity-90 transition-all duration-300"
+                >
+                  Importer kommende løb
+                </Button>
+              </CardContent>
+            </Card>
 
-        <TabsContent value="stars">
-          <Card><CardContent className="p-4 space-y-4">
-            <Label>Tilføj Axelgaard vurdering</Label>
-            <Input placeholder="Rytternavn" value={rider} onChange={(e) => setRider(e.target.value)} />
-            <Input placeholder="Antal stjerner (0-5)" value={stars} onChange={(e) => setStars(e.target.value)} />
-            <Button onClick={() => {
-              if (rider && stars) {
-                setArticleStars([...articleStars, { rider, stars }]);
-                setRider("");
-                setStars("");
-              }
-            }}>Tilføj</Button>
-            <ul className="list-disc list-inside pt-4">
-              {articleStars.map((item, i) => (
-                <li key={i}>{item.rider} - {item.stars} stjerner</li>
-              ))}
-            </ul>
-          </CardContent></Card>
-        </TabsContent>
+            {selectedRaces.length > 0 && (
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5 text-secondary" />
+                    Aktive løb ({selectedRaces.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {selectedRaces.map((race, i) => (
+                    <div key={i} className="border border-border p-4 rounded-lg bg-muted/30 transition-all duration-300 hover:shadow-card">
+                      <h3 className="font-semibold text-lg mb-2">{race.name}</h3>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4" />
+                          <span>Næste: <strong className="text-foreground">{getNextPicker(race) || "Alle har valgt"}</strong></span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          <span>Deadline: <strong className="text-foreground">{getCountdown(race.date)}</strong></span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
 
-        <TabsContent value="results">
-          <Card><CardContent className="p-4 space-y-6">
-            {selectedRaces.map((race, index) => (
-              <div key={index} className="space-y-2">
-                <h2 className="font-bold">{race.name}</h2>
-                <Button onClick={() => fetchSimulatedPCSResults(index)}>Hent PCS Resultater</Button>
-                {!race.autoPicksDone && <Button onClick={() => triggerAutoPicks(index)}>Auto-Pick Manglende Spillere</Button>}
-                <div className="pt-2">
-                  <h3 className="font-semibold">Resultater:</h3>
-                  <ol className="list-decimal list-inside">
-                    {race.results.map((rider, i) => (
-                      <li key={i}>{rider}</li>
+          <TabsContent value="picks" className="space-y-6 animate-slide-up">
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="w-5 h-5 text-primary" />
+                  Tilføj nyt valg
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="newPick">Rytternavn</Label>
+                  <Input 
+                    id="newPick"
+                    placeholder="Rytternavn" 
+                    value={newPick} 
+                    onChange={(e) => setNewPick(e.target.value)}
+                    className="transition-all duration-300 focus:shadow-cycling"
+                  />
+                </div>
+                {error && (
+                  <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+                    <p className="text-destructive text-sm">{error}</p>
+                  </div>
+                )}
+                <Button 
+                  className="w-full bg-gradient-cycling hover:opacity-90 transition-all duration-300"
+                  onClick={() => {
+                    const top8Count = riderPicks.filter(p => TOP8_LIST.includes(p.name)).length;
+                    if (TOP8_LIST.includes(newPick) && top8Count >= MAX_TOP8_PICKS) {
+                      setError("Du har allerede brugt dine 4 tilladte top-8 valg.");
+                      return;
+                    }
+                    // Use default star rating from articleStars or fallback to "3"
+                    const defaultStars = articleStars.find(star => star.rider === newPick)?.stars || "3";
+                    setRiderPicks([...riderPicks, { name: newPick, stars: defaultStars, auto: false }]);
+                    setNewPick("");
+                    setError("");
+                  }}
+                  disabled={!newPick}
+                >
+                  Tilføj valg
+                </Button>
+              </CardContent>
+            </Card>
+
+            {riderPicks.length > 0 && (
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle>Dine valg ({riderPicks.length})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {riderPicks.map((pick, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                        <span className="font-medium">{pick.name}</span>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="secondary" className="flex items-center gap-1">
+                            <Star className="w-3 h-3" />
+                            {pick.stars} stjerner
+                          </Badge>
+                          {pick.auto && <Badge variant="outline">auto</Badge>}
+                        </div>
+                      </div>
                     ))}
-                  </ol>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="stars" className="space-y-6 animate-slide-up">
+            <Card className="shadow-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="w-5 h-5 text-primary" />
+                  Tilføj Axelgaard vurdering
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="rider">Rytternavn</Label>
+                  <Input 
+                    id="rider"
+                    placeholder="Rytternavn" 
+                    value={rider} 
+                    onChange={(e) => setRider(e.target.value)}
+                    className="transition-all duration-300 focus:shadow-cycling"
+                  />
                 </div>
-                <div className="pt-2">
-                  <h3 className="font-semibold">Pointoversigt:</h3>
-                  <ul className="list-disc list-inside">
-                    {Object.entries(race.picks).map(([player, pick]: [string, any], i) => (
-                      <li key={i}>{player}: {pick.name} = {calculatePoints(pick.name, race)} point{pick.auto ? " (auto)" : ""}</li>
+                <div className="space-y-2">
+                  <Label htmlFor="starRating">Antal stjerner (0-5)</Label>
+                  <Input 
+                    id="starRating"
+                    placeholder="Antal stjerner (0-5)" 
+                    value={stars} 
+                    onChange={(e) => setStars(e.target.value)}
+                    className="transition-all duration-300 focus:shadow-cycling"
+                  />
+                </div>
+                <Button 
+                  onClick={() => {
+                    if (rider && stars) {
+                      setArticleStars([...articleStars, { rider, stars }]);
+                      setRider("");
+                      setStars("");
+                    }
+                  }}
+                  className="w-full bg-gradient-cycling hover:opacity-90 transition-all duration-300"
+                  disabled={!rider || !stars}
+                >
+                  Tilføj vurdering
+                </Button>
+              </CardContent>
+            </Card>
+
+            {articleStars.length > 0 && (
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle>Axelgaard vurderinger ({articleStars.length})</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {articleStars.map((item, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                        <span className="font-medium">{item.rider}</span>
+                        <Badge variant="secondary" className="flex items-center gap-1">
+                          <Star className="w-3 h-3" />
+                          {item.stars} stjerner
+                        </Badge>
+                      </div>
                     ))}
-                  </ul>
-                </div>
-              </div>
-            ))}
-          </CardContent></Card>
-        </TabsContent>
-      </Tabs>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent value="results" className="space-y-6 animate-slide-up">
+            {selectedRaces.length === 0 ? (
+              <Card className="shadow-card">
+                <CardContent className="text-center py-8">
+                  <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">Ingen løb tilføjet endnu. Gå til "Løb" for at oprette dit første løb.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              selectedRaces.map((race, index) => (
+                <Card key={index} className="shadow-card">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Trophy className="w-5 h-5 text-primary" />
+                      {race.name}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="flex gap-3">
+                      <Button 
+                        onClick={() => fetchSimulatedPCSResults(index)}
+                        variant="secondary"
+                        className="bg-gradient-secondary transition-all duration-300"
+                      >
+                        Hent PCS Resultater
+                      </Button>
+                      {!race.autoPicksDone && (
+                        <Button 
+                          onClick={() => triggerAutoPicks(index)}
+                          variant="outline"
+                          className="transition-all duration-300 hover:shadow-card"
+                        >
+                          Auto-Pick Manglende Spillere
+                        </Button>
+                      )}
+                    </div>
+
+                    {race.results.length > 0 && (
+                      <div className="space-y-3">
+                        <h3 className="font-semibold text-lg flex items-center gap-2">
+                          <Trophy className="w-4 h-4" />
+                          Resultater:
+                        </h3>
+                        <div className="bg-muted/30 rounded-lg p-4">
+                          <ol className="space-y-2">
+                            {race.results.map((rider, i) => (
+                              <li key={i} className="flex items-center gap-3">
+                                <Badge variant={i === 0 ? "default" : "secondary"} className="w-8 h-8 rounded-full flex items-center justify-center">
+                                  {i + 1}
+                                </Badge>
+                                <span className={i === 0 ? "font-semibold text-primary" : ""}>{rider}</span>
+                              </li>
+                            ))}
+                          </ol>
+                        </div>
+                      </div>
+                    )}
+
+                    {Object.keys(race.picks).length > 0 && (
+                      <div className="space-y-3">
+                        <h3 className="font-semibold text-lg flex items-center gap-2">
+                          <Star className="w-4 h-4" />
+                          Pointoversigt:
+                        </h3>
+                        <div className="bg-muted/30 rounded-lg p-4">
+                          <div className="space-y-2">
+                            {Object.entries(race.picks).map(([player, pick], i) => (
+                              <div key={i} className="flex items-center justify-between p-2 rounded border border-border/50">
+                                <div className="flex items-center gap-3">
+                                  <span className="font-medium">{player}</span>
+                                  <span className="text-muted-foreground">{pick.name}</span>
+                                  {pick.auto && <Badge variant="outline" className="text-xs">auto</Badge>}
+                                </div>
+                                <Badge variant="default" className="bg-gradient-cycling">
+                                  {calculatePoints(pick.name, race)} point
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="standings" className="space-y-6 animate-slide-up">
+            {selectedRaces.length === 0 ? (
+              <Card className="shadow-card">
+                <CardContent className="text-center py-8">
+                  <Medal className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">Ingen løb tilføjet endnu. Gå til "Løb" for at oprette dit første løb.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Medal className="w-5 h-5 text-primary" />
+                    Sæsonstillingen
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {(() => {
+                    const standings = calculateSeasonStandings();
+                    const hasFinishedRaces = selectedRaces.some(race => race.results.length > 0);
+                    
+                    if (!hasFinishedRaces) {
+                      return (
+                        <div className="text-center py-8">
+                          <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                          <p className="text-muted-foreground">Ingen afsluttede løb endnu. Tilføj resultater for at se stillingen.</p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="space-y-4">
+                         <div className="grid grid-cols-6 gap-4 p-3 bg-muted/30 rounded-lg font-semibold text-sm">
+                           <span>Position</span>
+                           <span>Spiller</span>
+                           <span>Point</span>
+                           <span>Snit</span>
+                           <span>Favoriter</span>
+                           <span>Wonderkids</span>
+                         </div>
+                        <div className="space-y-2">
+                           {standings.map((standing, index) => {
+                              const playerStats = calculatePlayerStats(standing.player);
+                              return (
+                                <div 
+                                  key={standing.player} 
+                                  className={`grid grid-cols-6 gap-4 p-4 rounded-lg transition-all duration-300 hover:shadow-card ${
+                                    index === 0 ? 'bg-gradient-cycling text-primary-foreground' :
+                                    index === 1 ? 'bg-gradient-secondary text-secondary-foreground' :
+                                    index === 2 ? 'bg-gradient-accent text-accent-foreground' :
+                                    'bg-muted/30'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2">
+                                    {index === 0 && <Trophy className="w-4 h-4" />}
+                                    {index === 1 && <Medal className="w-4 h-4" />}
+                                    {index === 2 && <Medal className="w-4 h-4" />}
+                                    <span className="font-bold">{index + 1}</span>
+                                  </div>
+                                  <span className="font-semibold">{standing.player}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-bold text-lg">{standing.totalPoints}</span>
+                                    <span className="text-sm opacity-75">({standing.races} løb)</span>
+                                  </div>
+                                  <span className="font-medium">{standing.average}</span>
+                                  <span className="text-sm font-medium">{playerStats.favorits} Favoriter</span>
+                                  <span className="text-sm font-medium">{playerStats.wonderkids} Wonderkids</span>
+                                </div>
+                              );
+                            })}
+                        </div>
+                        
+                        {standings.length > 0 && (
+                          <div className="mt-6 p-4 bg-muted/20 rounded-lg">
+                            <h4 className="font-semibold mb-2 flex items-center gap-2">
+                              <Star className="w-4 h-4" />
+                              Statistik
+                            </h4>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">Totale løb:</span>
+                                <span className="ml-2 font-semibold">
+                                  {selectedRaces.filter(race => race.results.length > 0).length}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Aktive spillere:</span>
+                                <span className="ml-2 font-semibold">
+                                  {standings.filter(s => s.races > 0).length}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Højeste point (enkelt løb):</span>
+                                <span className="ml-2 font-semibold">
+                                  {Math.max(...selectedRaces
+                                    .filter(race => race.results.length > 0)
+                                    .flatMap(race => 
+                                      Object.entries(race.picks).map(([_, pick]) => calculatePoints(pick.name, race))
+                                    ), 0
+                                  )}
+                                </span>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Bedste snit:</span>
+                                <span className="ml-2 font-semibold">
+                                  {standings.length > 0 ? standings[0].average : "0.0"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }
