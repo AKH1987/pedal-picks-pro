@@ -290,23 +290,23 @@ export default function Index() {
 
       <div className="container mx-auto p-6 space-y-6 -mt-8 relative z-20">
         <Tabs defaultValue="races" className="w-full">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex items-center gap-2">
-              <TabsList className="grid grid-cols-1 bg-card shadow-card">
+          <div className="flex items-center mb-6">
+            <div className="inline-flex h-10 items-center rounded-md bg-muted p-1 text-muted-foreground shadow-card">
+              <TabsList className="bg-transparent p-0">
                 <TabsTrigger value="races" className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   Løb
                 </TabsTrigger>
               </TabsList>
-              
-              <Button variant="outline" asChild className="flex items-center gap-2">
-                <Link to="/axelgaard">
-                  <Github className="w-4 h-4" />
-                  Axelgaard
-                </Link>
-              </Button>
-              
-              <TabsList className="grid grid-cols-3 bg-card shadow-card">
+              <Link
+                to="/axelgaard"
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 text-muted-foreground hover:bg-background hover:text-foreground"
+                aria-label="Åbn Axelgaard siden"
+              >
+                <Github className="w-4 h-4" />
+                <span className="ml-2">Axelgaard</span>
+              </Link>
+              <TabsList className="bg-transparent p-0">
                 <TabsTrigger value="picks" className="flex items-center gap-2">
                   <Target className="w-4 h-4" />
                   Picks
