@@ -1,5 +1,5 @@
 // Vitest + Testing Library setup
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
 
 // Optionally, extend more globals or mocks here if needed
 // Example: mock matchMedia for components using it

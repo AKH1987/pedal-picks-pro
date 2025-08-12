@@ -28,17 +28,17 @@ describe('Axelgaard page', () => {
       json: async () => mockRepo,
     } as any)
 
-    render(
+    const { findByText, getByText } = render(
       <MemoryRouter>
         <Axelgaard />
       </MemoryRouter>
     )
 
     // Wait for repo name to appear
-    expect(await screen.findByText(/test-repo/i)).toBeInTheDocument()
+    expect(await findByText(/test-repo/i)).toBeInTheDocument()
     // Sanity check for some key fields
-    expect(screen.getByText(/TypeScript/i)).toBeInTheDocument()
-    expect(screen.getByText(/42/)).toBeInTheDocument()
+    expect(getByText(/TypeScript/i)).toBeInTheDocument()
+    expect(getByText(/42/)).toBeInTheDocument()
   })
 
   test('shows error message on 404', async () => {
@@ -47,12 +47,12 @@ describe('Axelgaard page', () => {
       status: 404,
     } as any)
 
-    render(
+    const { findByText } = render(
       <MemoryRouter>
         <Axelgaard />
       </MemoryRouter>
     )
 
-    expect(await screen.findByText(/Repository not found or is private/i)).toBeInTheDocument()
+    expect(await findByText(/Repository not found or is private/i)).toBeInTheDocument()
   })
 })
