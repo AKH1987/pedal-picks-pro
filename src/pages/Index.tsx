@@ -12,8 +12,6 @@ import { Link } from "react-router-dom";
 import cyclingHero from "@/assets/cycling-hero.jpg";
 
 const FIXED_PLAYERS = ["Anders", "Dennis", "Emil", "Christian", "Tobias", "Mathias", "Isak"];
-const MAX_5_STAR_PICKS = 5;
-const MAX_TOP8_PICKS = 4;
 const TOP8_LIST = [
   "Tadej Pogacar", "Remco Evenepoel", "Jasper Disaster", "Ben O'Connor",
   "Mathieu Van der Poel", "Marc Hirschi", "Jonas Vingegaard", "Primoz Roglic"
@@ -98,13 +96,13 @@ const predefinedRaces = [
 ];
 
 export default function Index() {
-  const [riderPicks, setRiderPicks] = useState<RiderPick[]>([]);
-  const [newPick, setNewPick] = useState("");
+  
+  
   const [articleStars, setArticleStars] = useState<ArticleStar[]>([]);
   const [raceName, setRaceName] = useState("");
   const [raceDate, setRaceDate] = useState("");
   const [selectedRaces, setSelectedRaces] = useState<Race[]>([]);
-  const [error, setError] = useState("");
+  
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -491,49 +489,6 @@ export default function Index() {
           </TabsContent>
 
           <TabsContent value="picks" className="space-y-6 animate-slide-up">
-            <Card className="shadow-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-primary" />
-                  Tilføj nyt valg
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="newPick">Rytternavn</Label>
-                  <Input 
-                    id="newPick"
-                    placeholder="Rytternavn" 
-                    value={newPick} 
-                    onChange={(e) => setNewPick(e.target.value)}
-                    className="transition-all duration-300 focus:shadow-cycling"
-                  />
-                </div>
-                {error && (
-                  <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                    <p className="text-destructive text-sm">{error}</p>
-                  </div>
-                )}
-                <Button 
-                  className="w-full bg-gradient-cycling hover:opacity-90 transition-all duration-300"
-                  onClick={() => {
-                    const top8Count = riderPicks.filter(p => TOP8_LIST.includes(p.name)).length;
-                    if (TOP8_LIST.includes(newPick) && top8Count >= MAX_TOP8_PICKS) {
-                      setError("Du har allerede brugt dine 4 tilladte top-8 valg.");
-                      return;
-                    }
-                    // Use default star rating from articleStars or fallback to "3"
-                    const defaultStars = articleStars.find(star => star.rider === newPick)?.stars || "3";
-                    setRiderPicks([...riderPicks, { name: newPick, stars: defaultStars, auto: false }]);
-                    setNewPick("");
-                    setError("");
-                  }}
-                  disabled={!newPick}
-                >
-                  Tilføj valg
-                </Button>
-              </CardContent>
-            </Card>
 
             {upcomingSelected.length > 0 ? (
               (() => {
@@ -586,29 +541,6 @@ export default function Index() {
               </Card>
             )}
 
-            {riderPicks.length > 0 && (
-              <Card className="shadow-card">
-                <CardHeader>
-                  <CardTitle>Dine valg ({riderPicks.length})</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {riderPicks.map((pick, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
-                        <span className="font-medium">{pick.name}</span>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className="flex items-center gap-1">
-                            <Star className="w-3 h-3" />
-                            {pick.stars} stjerner
-                          </Badge>
-                          {pick.auto && <Badge variant="outline">auto</Badge>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
           </TabsContent>
 
 
