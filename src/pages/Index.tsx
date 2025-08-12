@@ -216,6 +216,13 @@ export default function Index() {
     setSelectedRaces(updatedRaces);
   };
 
+  const updateRacePick = (raceIndex: number, player: string, riderName: string): void => {
+    const updated = [...selectedRaces];
+    const stars = articleStars.find(s => s.rider === riderName)?.stars || updated[raceIndex].picks[player]?.stars || "3";
+    updated[raceIndex].picks[player] = { name: riderName, stars, auto: false };
+    setSelectedRaces(updated);
+  };
+
   const calculatePoints = (riderName: string, race: Race): number => {
     const position = race.results.indexOf(riderName);
     if (position === -1) return 0;
@@ -527,6 +534,57 @@ export default function Index() {
                 </Button>
               </CardContent>
             </Card>
+
+            {upcomingSelected.length > 0 ? (
+              (() => {
+                const nextRace = upcomingSelected[0];
+                const raceIndex = selectedRaces.findIndex(r => r.name === nextRace.name && r.date === nextRace.date);
+                if (raceIndex === -1) return null;
+                return (
+                  <Card className="shadow-card">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Target className="w-5 h-5 text-primary" />
+                        Picks for næste løb: {nextRace.name}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div className="text-sm text-muted-foreground flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        Deadline: <strong className="text-foreground ml-1">{getCountdown(nextRace.date)}</strong>
+                      </div>
+                      <div className="space-y-2">
+                        {FIXED_PLAYERS.map((player) => (
+                          <div key={player} className="grid grid-cols-1 md:grid-cols-3 gap-3 items-center p-3 bg-muted/30 rounded-lg">
+                            <div className="font-medium">{player}</div>
+                            <div className="md:col-span-2 flex items-center gap-2">
+                              <Input
+                                placeholder="Vælg rytter"
+                                value={selectedRaces[raceIndex].picks[player]?.name || ""}
+                                onChange={(e) => updateRacePick(raceIndex, player, e.target.value)}
+                                className="flex-1"
+                              />
+                              {selectedRaces[raceIndex].picks[player]?.stars && (
+                                <Badge variant="secondary" className="flex items-center gap-1">
+                                  <Star className="w-3 h-3" />
+                                  {selectedRaces[raceIndex].picks[player]?.stars} stjerner
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })()
+            ) : (
+              <Card className="shadow-card">
+                <CardContent className="text-sm text-muted-foreground py-6">
+                  Ingen kommende løb at lave picks til.
+                </CardContent>
+              </Card>
+            )}
 
             {riderPicks.length > 0 && (
               <Card className="shadow-card">
