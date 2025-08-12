@@ -103,7 +103,7 @@ export default function Index() {
   const [raceName, setRaceName] = useState("");
   const [raceDate, setRaceDate] = useState("");
   const [selectedRaces, setSelectedRaces] = useState<Race[]>([]);
-  
+  const [pickOrderLocked, setPickOrderLocked] = useState<Record<string, boolean>>({});
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -215,12 +215,20 @@ export default function Index() {
     setSelectedRaces(updatedRaces);
   };
 
-  const updateRacePick = (raceIndex: number, player: string, riderName: string): void => {
-    const updated = [...selectedRaces];
-    const stars = articleStars.find(s => s.rider === riderName)?.stars || updated[raceIndex].picks[player]?.stars || "3";
-    updated[raceIndex].picks[player] = { name: riderName, stars, auto: false };
-    setSelectedRaces(updated);
-  };
+const updateRacePick = (raceIndex: number, player: string, riderName: string): void => {
+  const updated = [...selectedRaces];
+  const race = updated[raceIndex];
+  const wasEmpty = Object.keys(race.picks).length === 0;
+
+  const stars = articleStars.find(s => s.rider === riderName)?.stars || race.picks[player]?.stars || "3";
+  race.picks[player] = { name: riderName, stars, auto: false };
+  setSelectedRaces(updated);
+
+  if (wasEmpty) {
+    const raceKey = `${race.name}|${race.date}`;
+    setPickOrderLocked(prev => (prev[raceKey] ? prev : { ...prev, [raceKey]: true }));
+  }
+};
 
   const calculatePoints = (riderName: string, race: Race): number => {
     const position = race.results.indexOf(riderName);
@@ -546,6 +554,7 @@ export default function Index() {
               <PickOrderManager
                 players={FIXED_PLAYERS}
                 races={upcomingSelected.map(r => ({ id: `${r.name}|${r.date}`, name: r.name, date: r.date }))}
+                locked={Boolean(upcomingSelected[0] && pickOrderLocked[`${upcomingSelected[0].name}|${upcomingSelected[0].date}`])}
               />
             </div>
  

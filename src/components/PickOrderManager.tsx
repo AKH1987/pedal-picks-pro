@@ -25,6 +25,7 @@ type Props = {
   players?: string[];
   races: Race[];
   onOrdersComputed?: (racesWithOrders: Race[], updatedStartCounts: StartCounts) => void;
+  locked?: boolean;
 };
 
 // Utility: roter array så element ved startIndex kommer først
@@ -86,6 +87,7 @@ export default function PickOrderManager({
   players = DEFAULT_PLAYERS,
   races,
   onOrdersComputed,
+  locked,
 }: Props) {
   const [startCounts, setStartCounts] = useState<StartCounts>(() =>
     Object.fromEntries(players.map((p) => [p, 0]))
@@ -114,7 +116,7 @@ export default function PickOrderManager({
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <Button onClick={handleCompute} disabled={!canCompute}>
+        <Button onClick={handleCompute} disabled={!canCompute || locked}>
           Generér pick-rækkefølge for rund(er)
         </Button>
         <Button variant="outline" onClick={handleResetCounts} title="Nulstil starter-tællinger">
