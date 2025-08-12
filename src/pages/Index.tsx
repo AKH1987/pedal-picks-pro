@@ -148,6 +148,21 @@ export default function Index() {
     setSelectedRaces([...selectedRaces, ...racesToImport]);
   };
 
+  const handleImportFullCalendar = () => {
+    // Import ALL races (including past). Avoid duplicates by name+date.
+    const existing = new Set(selectedRaces.map(r => `${r.name}|${r.date}`));
+    const racesToImport = predefinedRaces
+      .filter(r => !existing.has(`${r.name}|${r.date}`))
+      .map(race => ({
+        name: race.name,
+        date: race.date,
+        results: [],
+        picks: {},
+        autoPicksDone: false
+      }));
+    setSelectedRaces([...selectedRaces, ...racesToImport]);
+  };
+
   const getNextPicker = (race: Race): string | null => {
     for (let p of FIXED_PLAYERS) {
       if (!race.picks[p]) return p;
@@ -165,6 +180,15 @@ export default function Index() {
     }
   };
 
+  const isPastDeadline = (raceDate: string): boolean => {
+    try {
+      const raceStart = parseISO(raceDate);
+      const deadline = new Date(raceStart.getTime() - 90 * 60 * 1000);
+      return deadline <= now;
+    } catch {
+      return false;
+    }
+  };
   const fetchSimulatedPCSResults = (raceIndex: number): void => {
     const sampleFinishers = [
       "Jonas Vingegaard", "Remco Evenepoel", "Tadej Pogacar",
@@ -261,6 +285,14 @@ export default function Index() {
     return { favorits: playerFavorits, wonderkids: playerWonderkids };
   };
 
+  const upcomingSelected = selectedRaces
+    .filter(r => !isPastDeadline(r.date))
+    .sort((a, b) => parseISO(a.date).getTime() - parseISO(b.date).getTime());
+
+  const previousSelected = selectedRaces
+    .filter(r => isPastDeadline(r.date))
+    .sort((a, b) => parseISO(b.date).getTime() - parseISO(a.date).getTime());
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -333,11 +365,39 @@ export default function Index() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="w-5 h-5 text-secondary" />
-                    Kommende løb ({selectedRaces.length})
+                    Kommende løb ({upcomingSelected.length})
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {selectedRaces.map((race, i) => (
+                  {upcomingSelected.map((race, i) => (
+                    <div key={i} className="border border-border p-4 rounded-lg bg-muted/30 transition-all duration-300 hover:shadow-card">
+                      <h3 className="font-semibold text-lg mb-2">{race.name}</h3>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4" />
+                          <span>Næste: <strong className="text-foreground">{getNextPicker(race) || "Alle har valgt"}</strong></span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          <span>Deadline: <strong className="text-foreground">{getCountdown(race.date)}</strong></span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {previousSelected.length > 0 && (
+              <Card className="shadow-card">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5 text-secondary" />
+                    Tidligere løb ({previousSelected.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {previousSelected.map((race, i) => (
                     <div key={i} className="border border-border p-4 rounded-lg bg-muted/30 transition-all duration-300 hover:shadow-card">
                       <h3 className="font-semibold text-lg mb-2">{race.name}</h3>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -373,6 +433,13 @@ export default function Index() {
                   className="w-full bg-gradient-secondary hover:opacity-90 transition-all duration-300"
                 >
                   Importer kommende løb
+                </Button>
+                <Button 
+                  onClick={handleImportFullCalendar} 
+                  variant="outline"
+                  className="w-full"
+                >
+                  Importer hele kalenderen (inkl. tidligere)
                 </Button>
               </CardContent>
             </Card>
