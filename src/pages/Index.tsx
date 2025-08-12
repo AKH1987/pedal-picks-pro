@@ -10,6 +10,7 @@ import { formatDistanceToNowStrict, parseISO } from "date-fns";
 import { Trophy, Clock, Star, Users, Calendar, Target, Medal, Github } from "lucide-react";
 import { Link } from "react-router-dom";
 import cyclingHero from "@/assets/cycling-hero.jpg";
+import PickOrderManager from "@/components/PickOrderManager";
 
 const FIXED_PLAYERS = ["Anders", "Dennis", "Emil", "Christian", "Tobias", "Mathias", "Isak"];
 const TOP8_LIST = [
@@ -489,7 +490,7 @@ export default function Index() {
           </TabsContent>
 
           <TabsContent value="picks" className="space-y-6 animate-slide-up">
-
+ 
             {upcomingSelected.length > 0 ? (
               (() => {
                 const nextRace = upcomingSelected[0];
@@ -541,6 +542,13 @@ export default function Index() {
               </Card>
             )}
 
+            <div className="mt-6">
+              <PickOrderManager
+                players={FIXED_PLAYERS}
+                races={upcomingSelected.map(r => ({ id: `${r.name}|${r.date}`, name: r.name, date: r.date }))}
+              />
+            </div>
+ 
           </TabsContent>
 
 
